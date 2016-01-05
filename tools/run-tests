@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+cd $(dirname "$0")/..
+
+echo "test: Entering directory '$(pwd)'"
+
+export TZ=UTC
+
+./tools/prepublish
+
+[ "$1" = "compiler" ] || node_modules/.bin/mocha -C -R dot "test/server-tests.js"
+node_modules/.bin/mocha -C -R dot "test/compiler-tests.js"

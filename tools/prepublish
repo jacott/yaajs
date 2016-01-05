@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+var Path = require('path');
+var fs = require('fs');
+
+var topDir = Path.resolve(Path.join(__dirname, '..'));
+
+try {
+  var firstLineRe = /^[^\n]*\n/;
+  var yaa = fs.readFileSync(Path.join(topDir, "yaa-browser-template.js"), 'utf-8');
+  var context = fs.readFileSync(Path.join(topDir, "lib", "context.js")).toString().replace(firstLineRe, '');
+  var module = fs.readFileSync(Path.join(topDir, "lib", "module.js")).toString().replace(firstLineRe, '');
+  fs.writeFileSync(Path.join(topDir, 'yaa.js'), yaa.replace(/___CONTEXT___/, context).replace(/___MODULE___/, module));
+} catch(ex) {
+  process.stderr.write(ex.stack);
+  process.exit(1);
+}
