@@ -1,7 +1,7 @@
 define(function(require, exports, module) {
   return {
     load: function (name, req, onLoad) {
-      onLoad("simple " + name);
+      onLoad(req.module.state === module.constructor.LOADING ? "simple " + name : 'not loading');
     },
 
     write: function (pluginName, name, write) {
