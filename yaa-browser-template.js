@@ -110,7 +110,6 @@
     setTimeout(function () {
       if (! mainCtx.modules[mainModuleId]) {
         var mod = new Module(mainCtx, mainModuleId);
-        mainCtx.modules[mainModuleId] = mod;
         mod.loadModule();
       }
       Module.loadPaused(mainCtx);
