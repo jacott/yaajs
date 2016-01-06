@@ -28,6 +28,7 @@ define(function(require, exports, module) {
         Module.currentCtx = ctx;
         var foo = myCtx.modules.foo;
         foo.state = Module.LOADED;
+        --myCtx.waitLoaded;
         foo.exports = {};
         myCtx.require('data/dep-on-foo', function (arg) {
           try {
