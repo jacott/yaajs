@@ -18,7 +18,7 @@ define(function(require, exports, module) {
 
       it("can add a dependency to a module", function () {
         module.addDependancy("flux");
-        expect(module.dependants.flux).to.be(undefined);
+        expect(module.dependants.flux).to.be(1);
         expect(module.dependants.dep2).to.not.be.ok();
         var mod = module.get('./data/dep2');
         module.addDependancy(mod);

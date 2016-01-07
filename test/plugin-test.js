@@ -30,6 +30,39 @@ define(function(require, exports, module) {
         });
       });
 
+      it("maps un-normalized correctly", function () {
+        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
+        var pmod = new Module(myCtx, 'foo');
+        var caller = new Module(myCtx, 'baz');
+        var loadCount = 0;
+        pmod.exports = {load: function (name, req, onLoad) {
+          ++loadCount;
+          console.log('DEBUG name', name);
+        }};
+        var plugin = new Module.Plugin(pmod);
+        var myMod = plugin.fetch("./unnorm", caller);
+        var myMod2 = plugin.fetch("unnorm");
+        expect(myCtx.waitLoaded).to.be(2);
+        expect(myMod.id).to.equal('');
+        expect(plugin.waiting['baz']['./unnorm'][0]).to.be(caller);
+        expect(plugin.waiting['baz']['./unnorm'][1]).to.be(myMod);
+        expect(plugin.waiting['']['unnorm'][0]).to.be(undefined);
+        expect(plugin.waiting['']['unnorm'][1]).to.be(myMod2);
+
+        var otherMod1 = new Module(myCtx, 'otherMod1');
+        var otherMod2 = new Module(myCtx, 'otherMod2');
+        myMod.addDependancy(otherMod1);
+        myMod2.addDependancy(otherMod2);
+
+        plugin.ready();
+
+        expect(loadCount).to.equal(1);
+
+        expect(myMod.dependants).to.eql({ otherMod1: 1, otherMod2: 1});
+        expect(myCtx.waitLoaded).to.equal(4);
+        expect(myCtx.depCount).to.equal(0);
+      });
+
       it("calls callbacks", function (done) {
         var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
         var waitCount = 2;
