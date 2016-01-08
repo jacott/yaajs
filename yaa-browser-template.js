@@ -17,9 +17,9 @@
     node._yaajsModule = mod;
     callback && (node._yassjsOnCallback = callback);
     error && (node._yassjsOnError = error);
-    node.addEventListener('load', globalError);
+    node.addEventListener('load', onLoad);
     if (++pendingCounter === 1)
-      window.addEventListener('error', globalError, true);
+      window.addEventListener('error', onLoad, true);
 
     document.head.appendChild(node);
   };
@@ -31,7 +31,7 @@
 
   global.define = Module.define;
 
-  function globalError(event) {
+  function onLoad(event) {
     var script = event.target !== window && event.target;
     if (! script) {
       var fn = event.filename;
@@ -49,9 +49,9 @@
     var mod = script._yaajsModule;
     if (! mod) return;
     script._yaajsModule = null;
-    script.removeEventListener('load', globalError);
+    script.removeEventListener('load', onLoad);
     if (--pendingCounter === 0) {
-      window.removeEventListener('error', globalError, true);
+      window.removeEventListener('error', onLoad, true);
     }
     if (event.type === 'error') {
       var error = mod.error(event.message || 'load error', 'onload');
