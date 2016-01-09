@@ -37,7 +37,6 @@ define(function(require, exports, module) {
         var loadCount = 0;
         pmod.exports = {load: function (name, req, onLoad) {
           ++loadCount;
-          console.log('DEBUG name', name);
         }};
         var plugin = new Module.Plugin(pmod);
         var myMod = plugin.fetch("./unnorm", caller);
@@ -59,7 +58,7 @@ define(function(require, exports, module) {
         expect(loadCount).to.equal(1);
 
         expect(myMod.dependants).to.eql({ otherMod1: 1, otherMod2: 1});
-        expect(myCtx.waitLoaded).to.equal(4);
+        expect(myCtx.waitLoaded).to.equal(5);
         expect(myCtx.depCount).to.equal(0);
       });
 

@@ -7,8 +7,7 @@
 
   var pendingCounter = 0;
 
-  Module.prototype.loadModule = function (callback, error) {
-    var mod = this;
+  Context.prototype.loadModule = function (mod, callback, error) {
     var node = document.createElement('script');
     node.async = true;
     node.charset = 'utf-8';
@@ -24,9 +23,9 @@
     document.head.appendChild(node);
   };
 
-  Module.prototype.undef = function () {
-    this.node &&
-      this.node.parentNode.removeChild(this.node);
+  Context.prototype.undef = function (mod) {
+    mod.node &&
+      mod.node.parentNode.removeChild(mod.node);
   };
 
   global.define = Module.define;
@@ -109,8 +108,7 @@
     mainModuleId = mainCtx.normalizeId(mainModuleId);
     setTimeout(function () {
       if (! mainCtx.modules[mainModuleId]) {
-        var mod = new Module(mainCtx, mainModuleId);
-        mod.loadModule();
+        mainCtx.loadModule(new Module(mainCtx, mainModuleId));
       }
       Module.loadPaused(mainCtx);
     }, 0);
