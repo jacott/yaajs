@@ -7,15 +7,13 @@
 
   var pendingCounter = 0;
 
-  Context.prototype.loadModule = function (mod, callback, error) {
+  Context.prototype.loadModule = function (mod) {
     var node = document.createElement('script');
     node.async = true;
     node.charset = 'utf-8';
     mod.node = node;
     node.setAttribute('src', mod.uri);
     node._yaajsModule = mod;
-    callback && (node._yassjsOnCallback = callback);
-    error && (node._yassjsOnError = error);
     node.addEventListener('load', onLoad);
     if (++pendingCounter === 1)
       window.addEventListener('error', onLoad, true);
@@ -55,15 +53,6 @@
     if (event.type === 'error') {
       var error = mod.error(event.message || 'load error', 'onload');
       error.event = event;
-      if (script._yassjsOnError) {
-        script._yassjsOnError.call(mod, error);
-        return;
-      }
-    } else {
-      if (script._yassjsOnCallback) {
-        script._yassjsOnCallback.call(mod, event);
-        return;
-      }
     }
     loadComplete.call(mod, event);
   }

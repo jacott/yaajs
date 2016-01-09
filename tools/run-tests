@@ -9,4 +9,4 @@ export TZ=UTC
 ./tools/prepublish
 
 [ "$1" = "compiler" ] || node_modules/.bin/mocha -C -R dot "test/server-tests.js"
-node_modules/.bin/mocha -C -R dot "test/compiler-tests.js"
+[ "$1" = "server" ] || node_modules/.bin/mocha -C -R dot "test/compiler-tests.js"
