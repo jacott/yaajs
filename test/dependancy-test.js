@@ -36,25 +36,25 @@ define(function(require, exports, module) {
         prepare(mods.m6);
 
         myCtx.onError = function (err) {};
-        mods.m5.handleError("foo");
+        mods.m5._error("foo");
 
-        expect(myCtx.waitLoaded).to.be(3);
+        expect(myCtx.resolvingCount).to.be(3);
         expect(myCtx.depCount).to.be(2);
         expect(mods.m6.dependants).to.eql({});
-        expect(Object.keys(myCtx.waitDep)).to.eql(['m8']);
+        expect(Object.keys(myCtx.waitReady)).to.eql(['m8']);
       });
 
       it("should wait for dependants", function () {
         var depMap = depGraph("1d2");
-        expect(myCtx.waitLoaded).to.be(1);
+        expect(myCtx.resolvingCount).to.be(1);
 
         depGraph("3d2,4");
-        expect(myCtx.waitLoaded).to.be(2);
+        expect(myCtx.resolvingCount).to.be(2);
         expect(mods.m3.depCount).to.be(2);
         expect(myCtx.depCount).to.be(3);
 
         prepare(mods.m2);
-        expect(myCtx.waitLoaded).to.be(1);
+        expect(myCtx.resolvingCount).to.be(1);
         expect(mods.m2.dependants).to.eql({ m1: 1, m3: 1 });
         expect(mods.m3.depCount).to.be(1);
         expect(mods.m4.dependants).to.eql({ m3: 1 });
@@ -64,7 +64,7 @@ define(function(require, exports, module) {
         prepare(mods.m4);
         expect(mods.m3.depCount).to.be(0);
         expect(myCtx.depCount).to.be(0);
-        expect(myCtx.waitLoaded).to.be(0);
+        expect(myCtx.resolvingCount).to.be(0);
         expect(v.callback).to.be('result_m3');
       });
 
@@ -73,14 +73,14 @@ define(function(require, exports, module) {
         mods.m4.onError = [function (err, m5) {v.err4 = err}];
         mods.m2.onError = [function (err, m) {v.err2 = m.id; mods.m5.state = Module.LOADING}];
 
-        mods.m5.handleError("foo");
+        mods.m5._error("foo");
         expect(v.err2).to.be("m2");
         expect(v.err4).to.be("foo");
       });
 
       it("should break cycle", function () {
         var depMap = depGraph("1d2 2d4,3 3d4,5 4d3");
-        expect(myCtx.waitLoaded).to.be(1);
+        expect(myCtx.resolvingCount).to.be(1);
         expect(myCtx.depCount).to.be(6);
         expect(v.callback).to.be('result_m3');
         prepare(mods.m5);
@@ -98,7 +98,7 @@ define(function(require, exports, module) {
 
       function prepare(mod, deps) {
         v.loadModule = [];
-        Module._prepareDefine(mod, deps, body);
+        Module._prepare(mod, deps, body);
         return v.loadModule;
       }
 

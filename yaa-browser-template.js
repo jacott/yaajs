@@ -68,14 +68,14 @@
     if (event.type === 'error') {
       var error = mod.error(event.message || 'load error', 'onload');
       error.event = event;
-      mod && mod.handleError(error);
+      mod && mod._error(error);
       return;
     }
 
     var gdr = Module._globalDefineResult;
     Module._globalDefineResult = null;
     if (gdr)
-      Module._prepareDefine(mod, gdr[1], gdr[2], gdr[3]);
+      Module._prepare(mod, gdr[1], gdr[2], gdr[3]);
     else
       return mod._nodefine();
   }
@@ -99,7 +99,7 @@
       if (! mainCtx.modules[mainModuleId]) {
         mainCtx.loadModule(new Module(mainCtx, mainModuleId));
       }
-      Module.loadPaused(mainCtx);
+      Module._unpause(mainCtx);
     }, 0);
   }
 }).call(null, this);

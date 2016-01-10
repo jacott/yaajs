@@ -28,7 +28,7 @@ define(function(require, exports, module) {
         Module.currentCtx = ctx;
         var foo = myCtx.modules.foo;
         foo.state = Module.LOADED;
-        --myCtx.waitLoaded;
+        --myCtx.resolvingCount;
         foo.exports = {};
         myCtx.require('data/dep-on-foo', function (arg) {
           try {
@@ -39,7 +39,7 @@ define(function(require, exports, module) {
           }
         }, done);
         setTimeout(function () {
-          Module._prepareDefine(foo);
+          Module._prepare(foo);
         }, 10);
       });
 
@@ -153,7 +153,7 @@ define(function(require, exports, module) {
             done(ex);
             return;
           }
-          Module._prepareDefine(mod, null, "success");
+          Module._prepare(mod, null, "success");
         });
       });
 

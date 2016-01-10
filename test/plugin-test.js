@@ -41,7 +41,7 @@ define(function(require, exports, module) {
         var plugin = new Module.Plugin(pmod);
         var myMod = plugin.fetch("./unnorm", caller);
         var myMod2 = plugin.fetch("unnorm");
-        expect(myCtx.waitLoaded).to.be(2);
+        expect(myCtx.resolvingCount).to.be(2);
         expect(myMod.id).to.equal('');
         expect(plugin.waiting['baz']['./unnorm'][0]).to.be(caller);
         expect(plugin.waiting['baz']['./unnorm'][1]).to.be(myMod);
@@ -58,7 +58,7 @@ define(function(require, exports, module) {
         expect(loadCount).to.equal(1);
 
         expect(myMod.dependants).to.eql({ otherMod1: 1, otherMod2: 1});
-        expect(myCtx.waitLoaded).to.equal(5);
+        expect(myCtx.resolvingCount).to.equal(5);
         expect(myCtx.depCount).to.equal(0);
       });
 
