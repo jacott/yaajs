@@ -5,7 +5,7 @@ define(function(require, exports, module) {
 
   return function (expect) {
     describe(module.id, function () {
-      var myCtx, mods, v = {};
+      var myCtx, mods, v;
       function callback(foo) {v.callback = foo};
       function body(a1, a2, a3, a4) {
         var args = new Array(arguments.length);
@@ -16,6 +16,7 @@ define(function(require, exports, module) {
       };
 
       beforeEach(function () {
+        v = {};
         v.loadModule = [];
         v.results = [];
         myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
@@ -42,6 +43,41 @@ define(function(require, exports, module) {
         expect(myCtx.depCount).to.be(2);
         expect(mods.m6.dependants).to.eql({});
         expect(Object.keys(myCtx.waitReady)).to.eql(['m8']);
+      });
+
+      it("will throw exception if ensureAcyclic", function () {
+        myCtx.config({ensureAcyclic: true});
+
+        try {
+          depGraph("1d2 2d1");
+        } catch(ex) {
+          expect(ex.message).to.be('Module: m2 - Cycle detected to m1');
+          return;
+        }
+        expect().to.fail("should have thrown exception");
+      });
+
+      it("can add a dependency to a module", function () {
+        depGraph("1");
+        var mod = mods.m1;
+        mod.dependOn("flux");
+        expect(mods.flux.dependants.m1).to.be(1);
+        expect(mod.depMap.flux).to.be(1);
+        expect(mod.depMap['data/dep2']).to.not.be.ok();
+        mod.dependOn('./data/dep2');
+        expect(mod.depMap['data/dep2']).to.be(1);
+        expect(mods['data/dep2'].dependants.m1).to.be(1);
+      });
+
+      it("will call onError if ensureAcyclic", function () {
+        myCtx.config({ensureAcyclic: true});
+        myCtx.onError = function (arg1, arg2, arg3, arg4) {v.args = [arg1, arg2, arg3]};
+
+        depGraph("1d2 2d3 3d1");
+
+        expect(v.args[0].message).to.be('Module: m3 - Cycle detected to m1');
+        expect(v.args[1].id).to.be('m3');
+        expect(v.args[2]).to.be(mods.m1);
       });
 
       it("should wait for dependants", function () {
@@ -82,7 +118,7 @@ define(function(require, exports, module) {
         var depMap = depGraph("1d2 2d4,3 3d4,5 4d3");
         expect(myCtx.resolvingCount).to.be(1);
         expect(myCtx.depCount).to.be(6);
-        expect(v.callback).to.be('result_m3');
+        expect(v.callback).to.be(undefined);
         prepare(mods.m5);
         expect(v.callback).to.eql('result_m1');
         expect(v.results).to.eql({

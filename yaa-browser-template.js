@@ -18,6 +18,7 @@
     if (++pendingCounter === 1)
       window.addEventListener('error', onLoad, true);
 
+    ++mod.ctx.loadingCount;
     document.head.appendChild(node);
   };
 
@@ -51,10 +52,13 @@
       window.removeEventListener('error', onLoad, true);
     }
     if (event.type === 'error') {
-      var error = mod.error(event.message || 'load error', 'onload');
+      var error = mod.newError(event.message || 'load error', 'onload');
       error.event = event;
     }
     loadComplete.call(mod, event);
+
+    if (--mod.ctx.loadingCount === 0)
+      Module.breakCycle(mod.ctx);
   }
 
   function loadComplete(event) {
@@ -66,7 +70,7 @@
       return;
 
     if (event.type === 'error') {
-      var error = mod.error(event.message || 'load error', 'onload');
+      var error = mod.newError(event.message || 'load error', 'onload');
       error.event = event;
       mod && mod._error(error);
       return;

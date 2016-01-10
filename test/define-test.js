@@ -16,15 +16,6 @@ define(function(require, exports, module) {
         expect(mod).to.not.be.ok();
       });
 
-      it("can add a dependency to a module", function () {
-        module.addDependancy("flux");
-        expect(module.dependants.flux).to.be(1);
-        expect(module.dependants.dep2).to.not.be.ok();
-        var mod = module.get('./data/dep2');
-        module.addDependancy(mod);
-        expect(module.dependants['data/dep2']).to.be(1);
-      });
-
       it("should allow named define calls", function () {
         define("foo", ['data/define-object', 'module'], function (defObj, module) {
           module.exports = function () {
