@@ -6,8 +6,6 @@ define(function(require, exports, module) {
   return function (expect) {
     describe(module.id, function () {
       var myCtx, mods, v = {};
-      v.loadModule = [];
-      v.results = [];
       function callback(foo) {v.callback = foo};
       function body(a1, a2, a3, a4) {
         var args = new Array(arguments.length);
@@ -18,6 +16,8 @@ define(function(require, exports, module) {
       };
 
       beforeEach(function () {
+        v.loadModule = [];
+        v.results = [];
         myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
         myCtx.loadModule = function (mod) {
           v.loadModule.push(mod);
@@ -26,6 +26,22 @@ define(function(require, exports, module) {
       });
       afterEach(function () {
         ctx.constructor.remove("my ctx");
+      });
+
+      it("should unload correctly", function () {
+        depGraph("1d2,6,7,10 2d4,3 3d4,5 4d3");
+
+        depGraph("8d9,10");
+
+        prepare(mods.m6);
+
+        myCtx.onError = function (err) {};
+        mods.m5.handleError("foo");
+
+        expect(myCtx.waitLoaded).to.be(3);
+        expect(myCtx.depCount).to.be(2);
+        expect(mods.m6.dependants).to.eql({});
+        expect(Object.keys(myCtx.waitDep)).to.eql(['m8']);
       });
 
       it("should wait for dependants", function () {
