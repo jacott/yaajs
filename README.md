@@ -27,7 +27,7 @@ npm i yaajs
 
 See [AMD](https://github.com/amdjs/amdjs-api) API
 
-Plugins and shims have a slightly non-compliant API to improve
+Shims have a slightly non-compliant API to improve
 performance and size; see tests for details.
 
 ## Testing / Developing

@@ -30,6 +30,25 @@ define(function(require, exports, module) {
         });
       });
 
+      it("can double require a plugin", function (done) {
+        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
+        var count = 2;
+        myCtx.require('data/simple-plugin!foo', assertOk);
+
+        myCtx.require('data/simple-plugin!foo', assertOk);
+
+        function assertOk(result) {
+          try {
+            expect(result).to.be("simple foo");
+            --count || done();
+          }
+          catch (ex) {
+            done(ex);
+          }
+        }
+
+      });
+
       it("maps un-normalized correctly", function () {
         var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
         var pmod = new Module(myCtx, 'foo');
