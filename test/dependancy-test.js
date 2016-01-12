@@ -7,10 +7,10 @@ define(function(require, exports, module) {
     describe(module.id, function () {
       var myCtx, mods, v;
       function callback(foo) {v.callback = foo};
-      function body(a1, a2, a3, a4) {
-        var args = new Array(arguments.length);
-        for(var i = 0; i < args.length; ++i) args[i] = arguments[i];
-        var modId = this.id;
+      function body(mod, a1, a2, a3, a4) {
+        var args = new Array(arguments.length - 1);
+        for(var i = 1; i < arguments.length; ++i) args[i-1] = arguments[i];
+        var modId = mod.id;
         v.results[modId] = args;
         return 'result_'+modId;
       };
@@ -130,11 +130,9 @@ define(function(require, exports, module) {
         expect(mods.m4.dependants).to.eql({ m2: 1, m3: 0 });
       });
 
-
-
       function prepare(mod, deps) {
         v.loadModule = [];
-        Module._prepare(mod, deps, body);
+        Module._prepare(mod, ['module'].concat(deps||[]), body);
         return v.loadModule;
       }
 

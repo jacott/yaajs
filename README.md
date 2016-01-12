@@ -3,14 +3,10 @@
 Yet Another [AMD](https://github.com/amdjs/amdjs-api) compliant
 javascript library. This is an alternative to
 [RequireJS](https://github.com/jrburke/requirejs). The main goals of
-Yaajs are to be smaller and more hackable with improved support for
-testing, development and debugging. In particular Yaajs manages a
-module dependancy tree and provides a `Module#unload` method to remove
-a module and all modules dependant on it.
-
-Yaajs is also mostly compiliant to the RequireJS api but does have
-some missing features and some more advanced options are done in a
-different manner.
+Yaajs are to be more hackable with improved support for testing,
+development and debugging. In particular Yaajs manages a module
+dependancy tree and provides a `Module#unload` method to remove a
+module and all modules dependant on it.
 
 Only modern browsers and NodeJS are supported.
 
@@ -27,8 +23,8 @@ npm i yaajs
 
 See [AMD](https://github.com/amdjs/amdjs-api) API
 
-Shims have a slightly non-compliant API to improve
-performance and size; see tests for details.
+Shim support is non-compliant at the moment it supports init and deps
+but only ensures deps are loaded before init is run.
 
 ## Testing / Developing
 
