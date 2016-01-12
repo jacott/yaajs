@@ -114,6 +114,16 @@ define(function(require, exports, module) {
         expect(v.err4).to.be("foo");
       });
 
+      it("breaks cycle iff no module loading", function () {
+        ++myCtx.loadingCount;
+        depGraph("1d2 2d1");
+        Module.breakCycle(myCtx);
+        expect(myCtx.depCount).to.be(2);
+        --myCtx.loadingCount;
+        Module.breakCycle(myCtx);
+        expect(myCtx.depCount).to.be(0);
+      });
+
       it("should break cycle", function () {
         var depMap = depGraph("1d2 2d4,3 3d4,5 4d3");
         expect(myCtx.resolvingCount).to.be(1);
