@@ -53,18 +53,18 @@ define(function(require, exports, module) {
 
       it("should normalize id wrt dir", function () {
         var ctx = module.ctx;
-        expect(ctx.normalizeId("../fuz/../foo", "bar/baz")).to.be("bar/foo");
-        expect(ctx.normalizeId("./foo", "bar/baz")).to.be("bar/baz/foo");
-        expect(ctx.normalizeId("foo/bar", "bar/baz")).to.be("foo/bar");
+        expect(ctx.normalizeId("../foo", "bar/baz/")).to.be("bar/foo");
+        expect(ctx.normalizeId("./foo", "bar/baz/")).to.be("bar/baz/foo");
+        expect(ctx.normalizeId("foo/bar", "bar/baz/")).to.be("foo/bar");
       });
 
       it("should generate urls relative to module", function () {
         var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: "foo"});
         var mod = new module.constructor(myCtx, "data/foo");
+        expect(mod.toUrl("../def.js")).to.be("foo/def.js");
         expect(require.toUrl("./foo")).to.be(require.module.toUrl('./foo'));
         expect(mod.toUrl("abc/def.j")).to.be('foo/abc/def.j');
         expect(mod.toUrl("./abc/def.html")).to.be("foo/data/abc/def.html");
-        expect(mod.toUrl("../def.js")).to.be("foo/def.js");
       });
 
       it("should normalize ids relative to module", function () {

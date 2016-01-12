@@ -10,7 +10,7 @@ define(function(require, exports, module) {
 
     describe(module.id, function () {
       it("can look for an existing module", function () {
-        var mod = module.get('./data/../data/define-no-deps');
+        var mod = module.get('./data/define-no-deps');
         expect(mod.id).to.be("data/define-no-deps");
         mod = module.get("fuz");
         expect(mod).to.not.be.ok();
@@ -59,7 +59,7 @@ define(function(require, exports, module) {
 
       it("should detect ids not normalizing within baseUrl", function () {
         expect(function () {
-          module.normalizeId("./subdir/../../test/dep2");
+          module.normalizeId("../test/dep2");
         }).to.throwException(/does not resolve/);
       });
 

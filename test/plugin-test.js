@@ -1,6 +1,6 @@
 /*global yaajs*/
 define(function(require, exports, module) {
-  var simple = require('data/simple-plugin!./subdir/../flux');
+  var simple = require('data/simple-plugin!./flux');
 
   var ctx = module.ctx;
   var Module = module.constructor;

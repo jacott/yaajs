@@ -54,51 +54,54 @@ define(function(require, exports, module) {
         }, done);
       });
 
-      it("can set shim", function (done) {
-        var myCtx = ctx.config({
-          context: 'my ctx',
-          baseUrl: ctx.baseUrl,
-          shim: {
-            './data/no-define': {
-              deps: ['data/dep2', 'exports', 'module'],
-              exports: function (dep2, exports, module) {
-                return [dep2, exports, module];
-              }
-            },
-          }
+      describe("shim", function () {
+        it("can set shim", function (done) {
+          var myCtx = ctx.config({
+            context: 'my ctx',
+            baseUrl: ctx.baseUrl,
+            shim: {
+              './data/no-define': {
+                deps: ['data/dep2', 'exports', 'module'],
+                exports: function (dep2, exports, module) {
+                  return [dep2, exports, module];
+                }
+              },
+            }
+          });
+
+          myCtx.require("data/no-define", function (result) {
+            try {
+              expect(result).to.be.an('array');
+              expect(result[0]).to.be(true);
+              expect(result[1]).to.eql({});
+              expect(result[2].id).to.be('data/no-define');
+              done();
+            } catch(ex) {
+              done(ex);
+            }
+          }, done);
+        }),
+
+        it("does not use require for shim", function (done) {
+          var myCtx = ctx.config({
+            context: 'my ctx',
+            baseUrl: ctx.baseUrl,
+            shim: {
+              'data/no-module': {},
+            }
+          });
+
+          myCtx.require("data/no-module", function (result) {
+            try {
+              expect(result).to.eql({module: false});
+              done();
+            } catch(ex) {
+              done(ex);
+            }
+          }, done);
         });
-
-        myCtx.require("data/no-define", function (result) {
-          try {
-            expect(result).to.be.an('array');
-            expect(result[0]).to.be(true);
-            expect(result[1]).to.eql({});
-            expect(result[2].id).to.be('data/no-define');
-            done();
-          } catch(ex) {
-            done(ex);
-          }
-        }, done);
-      }),
-
-      it("does not use require for shim", function (done) {
-        var myCtx = ctx.config({
-          context: 'my ctx',
-          baseUrl: ctx.baseUrl,
-          shim: {
-            'data/no-module': {},
-          }
-        });
-
-        myCtx.require("data/no-module", function (result) {
-          try {
-            expect(result).to.eql({module: false});
-            done();
-          } catch(ex) {
-            done(ex);
-          }
-        }, done);
       });
+
 
       it("should honor expectDefine", function (done) {
         var myCtx = ctx.config({
