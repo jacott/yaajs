@@ -45,8 +45,8 @@ define(function(require, exports, module) {
         expect(Object.keys(myCtx.waitReady)).to.eql(['m8']);
       });
 
-      it("will throw exception if ensureAcyclic", function () {
-        myCtx.config({ensureAcyclic: true});
+      it("will throw exception if enforceAcyclic", function () {
+        myCtx.config({enforceAcyclic: true});
 
         try {
           depGraph("1d2 2d1");
@@ -69,8 +69,8 @@ define(function(require, exports, module) {
         expect(mods['data/dep2'].dependants.m1).to.be(1);
       });
 
-      it("will call onError if ensureAcyclic", function () {
-        myCtx.config({ensureAcyclic: true});
+      it("will call onError if enforceAcyclic", function () {
+        myCtx.config({enforceAcyclic: true});
         myCtx.onError = function (arg1, arg2, arg3, arg4) {v.args = [arg1, arg2, arg3]};
 
         depGraph("1d2 2d3 3d1");
