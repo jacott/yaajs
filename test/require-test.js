@@ -134,7 +134,7 @@ define(function(require, exports, module) {
       });
 
       it("can recover from error", function (done) {
-        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl, requireDefine: true});
+        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl, enforceDefine: true});
         myCtx.require('./data/not-found', function () {
           myCtx.require('data/dep-on-not-found', function (arg) {
             try {
@@ -158,7 +158,7 @@ define(function(require, exports, module) {
       });
 
       it('should handle missing define', function (done) {
-        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl, requireDefine: true});
+        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl, enforceDefine: true});
         myCtx.require('./data/nested-no-define', function () {
           try {
             expect().fail("should not be loaded");

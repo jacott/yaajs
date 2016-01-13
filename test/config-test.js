@@ -110,7 +110,7 @@ define(function(require, exports, module) {
           shim: {
             'data/no-define': {expectDefine: true},
           },
-          requireDefine: true,
+          enforceDefine: true,
         });
 
         myCtx.require("data/no-define", function (result) {
