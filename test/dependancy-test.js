@@ -29,6 +29,19 @@ define(function(require, exports, module) {
         ctx.constructor.remove("my ctx");
       });
 
+      it("should depend on a ready module", function () {
+        depGraph("3d2");
+
+        mods.m2._ready();
+
+        depGraph("1d2");
+
+        expect(mods.m1.state).to.be(Module.READY);
+        expect(mods.m3.state).to.be(Module.READY);
+
+        expect(mods.m2.dependants).to.eql({ m3: 1, m1: 1 });
+      });
+
       it("should unload correctly", function () {
         depGraph("1d2,6,7,10 2d4,3 3d4,5 4d3");
 
