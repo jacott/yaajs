@@ -51,10 +51,6 @@
     if (--pendingCounter === 0) {
       window.removeEventListener('error', onLoad, true);
     }
-    if (event.type === 'error') {
-      var error = mod.newError(event.message || 'load error', 'onload');
-      error.event = event;
-    }
     loadComplete.call(mod, event);
 
     if (--mod.ctx.loadingCount === 0)
