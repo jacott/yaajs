@@ -66,7 +66,7 @@
       return;
 
     if (event.type === 'error') {
-      var error = mod.newError(event.message || 'load error', 'onload');
+      var error = mod.newError(event.message || 'failed to load', event.message || 'onload');
       error.event = event;
       mod && mod._error(error);
       return;
