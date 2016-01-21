@@ -109,14 +109,35 @@ define(function(require, exports, module) {
         }, done);
       });
 
+      it("should catch module init errors", function () {
+        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
+        var mod = new Module(myCtx, "foo-err");
+        var onError = mod.ctx.onError;
+        var expErr;
+        mod.ctx.onError = function (err) {expErr = err};
+        try {
+          Module._prepare(mod, [], function () {
+            throw new Error("bang!");
+          });
+        } finally {
+          mod.ctx.onError = onError;
+        }
+        expect(expErr.onload).to.be(undefined);
+        expect(expErr.toString()).to.match(/bang!/);
+      });
+
       // server only; mocha on browser seems to unconditionally catch syntax errors
       typeof window === 'undefined' &&
         it("should handle syntax errors", function (done) {
           var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
           myCtx.require('data/syntax-error', function () {done('fail')},
                         function (error, mod) {
-                          expect(error).to.be.a(SyntaxError);
-                          done();
+                          try {
+                            expect(error).to.be.a(SyntaxError);
+                            done();
+                          } catch (ex) {
+                            done(ex);
+                          }
                         });
         });
 
@@ -146,6 +167,7 @@ define(function(require, exports, module) {
           }, done);
         }, function (err, mod) {
           try {
+            expect(err.toString()).to.match(typeof window === 'undefined' ? /no such file/ : /failed to load/);
             expect(err.module.id).to.be('data/not-found');
             expect(err.module).to.be(mod);
             expect(err.onload).to.be(true);
