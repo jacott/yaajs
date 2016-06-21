@@ -102,4 +102,4 @@
       Module._unpause(mainCtx);
     }, 0);
   }
-}).call(null, this);
+}).call(null, window);
