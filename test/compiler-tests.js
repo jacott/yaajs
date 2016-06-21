@@ -48,12 +48,21 @@ describe("Compiling modules", function () {
   });
 
   it("can detech require dependencies", done => {
-    config.name = "data/compile-deps";
-    compiler.compile(config, function ({ast, code}) {
+    var myConfig = {
+      baseUrl: config.baseUrl,
+      name: "data/compile-deps",
+      onBuildRead: function (mod, contents) {
+        if (mod.id === 'data/compile-deps-1') {
+          return contents.toString().replace(/foo/g, 'fooBar');
+        }
+        return contents;
+      }
+    };
+    compiler.compile(myConfig, function ({ast, code}) {
       expect(ast.type).to.be("Program");
       expect(ast.body.length).to.be(4);
       expect(gcode(ast.body[0], code)).to
-        .be('define("data/compile-deps-1",["require","exports","module"],function(require,exports,module){return{define:function(foo){return"defined: "+foo}}});');
+        .be('define("data/compile-deps-1",["require","exports","module"],function(require,exports,module){return{define:function(fooBar){return"defined: "+fooBar}}});');
 
       expect(gcode(ast.body[1], code)).to
         .be('define("data/compile-deps",["require","exports","module","data/norm-plugin!norm/one","data/compile-deps-1"],function(require,exports,module){var name="./other";require(name);require(["./fuzz"]);require("./foo",function(){});name.require("./baz");require("./norm-plugin!one/load");require("./norm-plugin!one/more/load");return require("./compile-deps-1").define("x")});');

@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-Error.stackTraceLimit = 50;
+Error.stackTraceLimit = 100;
 
 var Path = require('path');
 var fs = require('fs');
 
 var compiler = require('../lib/compiler');
+const {parse} = require('babylon');
+const generate = require('babel-generator').default;
 
 // Converts more types than JSON.stringify including functions
 function stringify(value) {
@@ -44,15 +46,14 @@ process.chdir(topDir);
 var cfgStr = "yaajs.config(" + stringify(clientCfg) + ");\n";
 
 var compileConfig = {
-  // optimize: 'none',
   baseUrl: topDir,
 
   // // example onBuildRead
-  // onBuildRead: function (moduleName, contents) {
-  //   if (moduleName === 'css/loader')
+  // onBuildRead: function (mod, contents) {
+  //   if (mod.id === 'css/loader')
   //     return "define({loadAll: function(){}});";
 
-  //   if (moduleName === 'client') {
+  //   if (mod.id === 'client') {
   //     contents = fs.readFileSync(Path.join(topDir, "foo.js")).toString();
   //     return contents;
   //   }
@@ -69,12 +70,24 @@ try {fs.mkdirSync(buildDir);} catch(ex) {}
 
 
 try {
-  compiler.compile(compileConfig, function (codeTree) {
-    var code = ["window.isServer = false; window.isClient = true;\n", fs.readFileSync(Path.join(baseDir, 'yaa.js')), cfgStr];
-    for (;codeTree; codeTree = codeTree.next) {
-      code.push(codeTree.code);
-    }
-    fs.writeFileSync(compileConfig.out, code.join("\n"));
+  compiler.compile(compileConfig, function ({ast, code: codeMap}) {
+    const yaajsCode = fs.readFileSync(require.resolve('yaajs/yaa.js')).toString();
+    codeMap['/index.js'] = yaajsCode;
+    const yaajsAst = parse(yaajsCode, {sourceType: 'module', sourceFilename: '/index.js'}).program;
+    codeMap['/__config__.js'] = cfgStr;
+    const cfgStrAst = parse(cfgStr, {sourceType: 'module', sourceFilename: '/__config__.js'}).program;
+    ast.body.splice(0, 0, yaajsAst, cfgStrAst);
+
+    console.log('generate...');
+    const { code, map } = generate(ast, {
+      comments: false,
+      compact: true,
+      sourceMaps: true,
+    }, codeMap);
+    console.log('done');
+
+    fs.writeFileSync(compileConfig.out, code);
+    fs.writeFileSync(compileConfig.out+'.map', JSON.stringify(map));
   });
 } catch(ex) {
   process.stderr.write(ex.stack);
