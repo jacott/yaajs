@@ -15,6 +15,22 @@ define(function(require, exports, module) {
         expect(myCtx).to.be(ctx);
       });
 
+      it("can record module exports", function (done) {
+        var myCtx = new ctx.constructor({
+          context: 'my ctx', baseUrl: ctx.baseUrl+"data",
+          recordExports: true,
+        });
+
+        myCtx.require("define-object", function (result) {
+          try {
+            expect(myCtx.exportsModule(result)[0]).to.eql(myCtx.modules["define-object"]);
+            done();
+          } catch(ex) {
+            done(ex);
+          }
+        }, done);
+      });
+
       it("can set baseUrl", function (done) {
         var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: "foo"});
         expect(myCtx.baseUrl).to.be("foo/");

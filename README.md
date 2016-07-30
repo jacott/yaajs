@@ -32,14 +32,14 @@ Config options are:
 1. paths
 1. packages
 1. config
-1. shim
-
-Shim support is non-compliant at the moment. It supports init and deps
-but only ensures deps are loaded before init is run; not before module
-is loaded.
-
+1. shim - Shim support is non-compliant at the moment. It supports
+   init and deps but only ensures deps are loaded before init is run;
+   not before module is loaded.
 1. enforceDefine
-1. enforceAcyclic
+1. enforceAcyclic - An error is thrown if a dependency cycle is found.
+1. recordExports - Module exports which are objects are mapped to
+   their module the method `Context#exportsModule(export)` returns an
+   array of modules with that export.
 
 
 ## Testing / Developing
