@@ -24,7 +24,15 @@ define(function(require, exports, module) {
         myCtx.require("define-object", function (result) {
           try {
             expect(myCtx.exportsModule(result)[0]).to.eql(myCtx.modules["define-object"]);
-            done();
+            myCtx.require("simple", function (result) {
+              try {
+                expect(myCtx.exportsModule(result)).to.be(undefined);
+
+                done();
+              } catch(ex) {
+                done(ex);
+              }
+            }, done);
           } catch(ex) {
             done(ex);
           }
