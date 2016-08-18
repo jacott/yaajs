@@ -1,29 +1,22 @@
 /*global yaajs*/
 define(function(require, exports, module) {
+  var modBuilder = require('./mod-builder');
+
   var ctx = module.ctx;
   var Module = module.constructor;
 
   return function (expect) {
     describe(module.id, function () {
       var myCtx, mods, v;
-      function callback(foo) {v.callback = foo};
-      function body(mod, a1, a2, a3, a4) {
-        var args = new Array(arguments.length - 1);
-        for(var i = 1; i < arguments.length; ++i) args[i-1] = arguments[i];
-        var modId = mod.id;
-        v.results[modId] = args;
-        return 'result_'+modId;
-      };
+      var prepare, depGraph;
 
       beforeEach(function () {
         v = {};
-        v.loadModule = [];
-        v.results = [];
         myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-        myCtx.loadModule = function (mod) {
-          v.loadModule.push(mod);
-        };
         mods = myCtx.modules;
+        var mb = modBuilder(myCtx, v);
+        depGraph = mb.depGraph;
+        prepare = mb.prepare;
       });
       afterEach(function () {
         ctx.constructor.remove("my ctx");
@@ -39,7 +32,7 @@ define(function(require, exports, module) {
         expect(mods.m1.state).to.be(Module.READY);
         expect(mods.m3.state).to.be(Module.READY);
 
-        expect(mods.m2.dependants).to.eql({ m3: 1, m1: 1 });
+        expect(mods.m2._requiredBy).to.eql({ m3: 1, m1: 1 });
       });
 
       it("should unload correctly", function () {
@@ -54,7 +47,7 @@ define(function(require, exports, module) {
 
         expect(myCtx.resolvingCount).to.be(3);
         expect(myCtx.depCount).to.be(2);
-        expect(mods.m6.dependants).to.eql({});
+        expect(mods.m6._requiredBy).to.eql({});
         expect(Object.keys(myCtx.waitReady)).to.eql(['m8']);
       });
 
@@ -74,12 +67,12 @@ define(function(require, exports, module) {
         depGraph("1");
         var mod = mods.m1;
         mod.dependOn("flux");
-        expect(mods.flux.dependants.m1).to.be(1);
-        expect(mod.depMap.flux).to.be(1);
-        expect(mod.depMap['data/dep2']).to.not.be.ok();
+        expect(mods.flux._requiredBy.m1).to.be(1);
+        expect(mod._requires.flux).to.be(1);
+        expect(mod._requires['data/dep2']).to.not.be.ok();
         mod.dependOn('./data/dep2');
-        expect(mod.depMap['data/dep2']).to.be(1);
-        expect(mods['data/dep2'].dependants.m1).to.be(1);
+        expect(mod._requires['data/dep2']).to.be(1);
+        expect(mods['data/dep2']._requiredBy.m1).to.be(1);
       });
 
       it("will call onError if enforceAcyclic", function () {
@@ -93,8 +86,8 @@ define(function(require, exports, module) {
         expect(v.args[2]).to.be(mods.m1);
       });
 
-      it("should wait for dependants", function () {
-        var depMap = depGraph("1d2");
+      it("should wait for _requiredBy", function () {
+        var _requires = depGraph("1d2");
         expect(myCtx.resolvingCount).to.be(1);
 
         depGraph("3d2,4");
@@ -104,9 +97,9 @@ define(function(require, exports, module) {
 
         prepare(mods.m2);
         expect(myCtx.resolvingCount).to.be(1);
-        expect(mods.m2.dependants).to.eql({ m1: 1, m3: 1 });
+        expect(mods.m2._requiredBy).to.eql({ m1: 1, m3: 1 });
         expect(mods.m3.depCount).to.be(1);
-        expect(mods.m4.dependants).to.eql({ m3: 1 });
+        expect(mods.m4._requiredBy).to.eql({ m3: 1 });
         expect(v.callback).to.be('result_m1');
         expect(myCtx.depCount).to.be(1);
 
@@ -118,7 +111,7 @@ define(function(require, exports, module) {
       });
 
       it("should handle error with cycle", function () {
-        var depMap = depGraph("2d3 3d4,5 4d2,5");
+        var _requires = depGraph("2d3 3d4,5 4d2,5");
         mods.m4.onError = [function (err, m5) {v.err4 = err}];
         mods.m2.onError = [function (err, m) {v.err2 = m.id; mods.m5.state = Module.LOADING}];
 
@@ -138,7 +131,7 @@ define(function(require, exports, module) {
       });
 
       it("should break cycle", function () {
-        var depMap = depGraph("1d2 2d4,3 3d4,5 4d3");
+        var _requires = depGraph("1d2 2d4,3 3d4,5 4d3");
         expect(myCtx.resolvingCount).to.be(1);
         expect(myCtx.depCount).to.be(6);
         expect(v.callback).to.be(undefined);
@@ -150,35 +143,8 @@ define(function(require, exports, module) {
           m4: [ 'result_m3' ],
           m2: [ 'result_m4', 'result_m3' ],
           m1: [ 'result_m2' ] });
-        expect(mods.m4.dependants).to.eql({ m2: 1, m3: 0 });
+        expect(mods.m4._requiredBy).to.eql({ m2: 1, m3: 0 });
       });
-
-      function prepare(mod, deps) {
-        v.loadModule = [];
-        Module._prepare(mod, ['module'].concat(deps||[]), body);
-        return v.loadModule;
-      }
-
-      function depGraph(pattern) {
-        var loads = pattern.split(' ');
-
-        var depMap = {};
-        var loadOrder = loads.map(function (node) {
-          node = node.split('d');
-          var id = 'm'+node[0];
-          depMap[id] = (node[1] || '').split(',').map(function (d) {return 'm'+d});
-          return id;
-        });
-
-        myCtx.require(loadOrder[0], callback);
-        var modules = myCtx.modules;
-        loadOrder.forEach(function (id) {
-          var mod = modules[id];
-          prepare(mod, depMap[id]);
-        });
-
-        return depMap;
-      }
     });
   };
 });

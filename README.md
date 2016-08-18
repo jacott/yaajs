@@ -24,7 +24,9 @@ npm i yaajs
 
 ## API
 
-See [AMD](https://github.com/amdjs/amdjs-api) API
+See [AMD API](https://github.com/amdjs/amdjs-api) for the common API.
+
+See the tests in the tests directory for features specific to yaajs.
 
 Config options are:
 
