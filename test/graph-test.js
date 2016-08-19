@@ -57,6 +57,33 @@ define(function(require, exports, module) {
           expect(graph.findPath(mods.m3, mods.m2)).to.be(undefined);
         });
       });
+
+      describe('isRequiredBy', function () {
+        /**
+         * Test if `supplier` is required by `user`.
+         *
+         * @param supplier the module to look for
+         * @param user the module to start from
+         * @returns {boolean} true if path found from user to supplier
+         **/
+
+        it("can find direct path", function () {
+          expect(graph.isRequiredBy(modules['graph'], module)).to.be(true);
+          expect(graph.isRequiredBy(module, modules['graph'])).to.be(false);
+        });
+
+        it("can find shortest path", function () {
+          depGraph("1d2,3,4 3d4 4d8 5d6,7 8d7");
+          expect(graph.isRequiredBy(mods.m7, mods.m1)).to.be(true);
+        });
+
+        it("can't find path", function () {
+          depGraph("1d2,3 2d3");
+
+          expect(graph.isRequiredBy(mods.m1, mods.m2)).to.be(false);
+          expect(graph.isRequiredBy(mods.m2, mods.m3)).to.be(false);
+        });
+      });
     });
   };
 
