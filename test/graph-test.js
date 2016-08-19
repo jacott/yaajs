@@ -46,6 +46,7 @@ define(function(require, exports, module) {
 
         it("can find shortest path", function () {
           depGraph("1d2,3,4 3d4 4d8 5d6,7 8d7");
+          mods.m1._requires[''] = 1;
           const ans = graph.findPath(mods.m1, mods.m7).map(m => m.id);
           expect(ans).to.eql(['m1', 'm4', 'm8', 'm7']);
         });
@@ -74,6 +75,7 @@ define(function(require, exports, module) {
 
         it("can find shortest path", function () {
           depGraph("1d2,3,4 3d4 4d8 5d6,7 8d7");
+          mods.m1._requires[''] = 1;
           expect(graph.isRequiredBy(mods.m7, mods.m1)).to.be(true);
         });
 
