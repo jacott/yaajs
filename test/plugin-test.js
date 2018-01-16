@@ -23,7 +23,14 @@ define(function(require, exports, module) {
         }, function (error) {
           try {
             expect(error.message).to.be("Module: data/error-plugin!foo - foo");
-            done();
+            setTimeout(function () {
+              try {
+                expect(myCtx.modules['data/error-plugin!foo']).to.be(undefined);
+                done();
+              } catch(ex) {
+                done(ex);
+              }
+            }, 0);
           } catch(ex) {
             done(ex);
           }
