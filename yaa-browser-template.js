@@ -1,14 +1,12 @@
-(function (global) {
-  ___CONTEXT___
-
-  ___MODULE___
+(global =>{
+  ___INSERT___
 
   Context.Module = Module;
 
-  var pendingCounter = 0;
+  let pendingCounter = 0;
 
   Context.prototype.loadModule = function (mod) {
-    var node = document.createElement('script');
+    const node = document.createElement('script');
     node.async = true;
     node.charset = 'utf-8';
     mod.node = node;
@@ -29,24 +27,24 @@
 
   global.define = Module.define;
 
-  function onLoad(event) {
-    var script = event.target !== window && event.target;
-    if (! script) {
-      var fn = event.filename;
-      if (fn) {
-        var scripts = document.head.getElementsByTagName('script');
-        for(var i = 0; i < scripts.length; ++i) {
+  const onLoad = event =>{
+    const script = event.target !== window && event.target;
+    if (script == null) {
+      const fn = event.filename;
+      if (fn != null) {
+        const scripts = document.head.getElementsByTagName('script');
+        for(let i = 0; i < scripts.length; ++i) {
           script = scripts[i];
           if (script._yaajsModule && script.src === fn) {
             break;
           }
         }
       }
-      if (! script) return;
+      if (script == null) return;
     }
-    var mod = script._yaajsModule;
-    if (! mod) return;
-    script._yaajsModule = null;
+    const mod = script._yaajsModule;
+    if (mod === undefined) return;
+    script._yaajsModule = undefined;
     script.removeEventListener('load', onLoad);
     if (--pendingCounter === 0) {
       window.removeEventListener('error', onLoad, true);
@@ -55,47 +53,46 @@
 
     if (--mod.ctx.loadingCount === 0)
       Module.breakCycle(mod.ctx);
-  }
+  };
 
   function loadComplete(event) {
-    var mod = this;
-    var node = mod.node;
+    const {node} = this;
 
-
-    if (mod.state > Module.LOADING || mod.state < 0)
+    if (this.state > Module.LOADING || this.state < 0)
       return;
 
     if (event.type === 'error') {
-      var error = mod.newError(event.message || 'failed to load', event.message || 'onload');
+      const error = this.newError(event.message || 'failed to load', event.message || 'onload');
       error.event = event;
-      mod && mod._error(error);
+      this._error(error);
       return;
     }
 
-    var gdr = Module._globalDefineResult;
-    Module._globalDefineResult = null;
-    if (gdr)
-      Module._prepare(mod, gdr[1], gdr[2], gdr[3]);
+    const gdr = Module._globalDefineResult;
+    Module._globalDefineResult = undefined;
+    if (gdr !== undefined)
+      Module._prepare(this, gdr[1], gdr[2], gdr[3]);
     else
-      return mod._nodefine();
+      return this._nodefine();
   }
 
-  var yaaScript = document.querySelector('script[data-main]');
-  var mainModuleId = yaaScript && yaaScript.getAttribute('data-main');
-  if (mainModuleId) {
-    var slashPos = mainModuleId.lastIndexOf("/");
-    var baseUrl = slashPos === -1 ? '.' : mainModuleId.slice(0, slashPos);
+  const yaaScript = document.querySelector('script[data-main]');
+  let mainModuleId = yaaScript && yaaScript.getAttribute('data-main');
+  let baseUrl;
+  if (mainModuleId != null) {
+    const slashPos = mainModuleId.lastIndexOf("/");
+    baseUrl = slashPos === -1 ? '.' : mainModuleId.slice(0, slashPos);
     mainModuleId = mainModuleId.slice(slashPos+1).replace(/\.js$/, '');
   }
-  var mainCtx = Module.currentCtx = new Context({baseUrl: baseUrl || './'});
+  const mainCtx = Module.currentCtx = new Context({baseUrl: baseUrl || './'});
 
   global.yaajs = mainCtx.require;
   global.yaajs.config = mainCtx.config.bind(mainCtx);
 
-  if (mainModuleId) {
+  if (mainModuleId != null) {
     mainCtx.paused = true;
     mainModuleId = mainCtx.normalizeId(mainModuleId);
-    setTimeout(function () {
+    setTimeout(()=>{
       if (! mainCtx.modules[mainModuleId]) {
         mainCtx.loadModule(new Module(mainCtx, mainModuleId));
       }
