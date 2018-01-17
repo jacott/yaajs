@@ -1,10 +1,10 @@
 /*global yaajs*/
 define(function(require, exports, module) {
-  var dep1 = require('./data/subdir/dep1');
-  var defineObject = require('./data/define-object');
-  var defineNoDeps = require('data/define-no-deps');
-  var defineDepsFirst = require('./data/define-deps-first');
-  var Module = module.constructor;
+  const dep1 = require('./data/subdir/dep1');
+  const defineObject = require('./data/define-object');
+  const defineNoDeps = require('data/define-no-deps');
+  const defineDepsFirst = require('./data/define-deps-first');
+  const Module = module.constructor;
 
   return function (expect) {
 

@@ -79,16 +79,33 @@ describe("Compiling modules", function () {
 
   it("can compile es6", done => {
     config.name = "data/compile-es6";
+    let called = false;
     compiler.compile(config, function ({ast, code}) {
       expect(ast.type).to.be("Program");
       expect(ast.body.length).to.be(1);
       expect(gcode(ast.body[0], code)).to.be('define("data/compile-es6",["require"],require=>require("data/dep2"));');
-      done();
+      called = true;
     });
+    expect(called).to.be(true);
+    done();
   });
 
-  function gcode(node, code) {
-    return generate({type: 'Program', body: [node]}, {minified: true, comments: false}, node && code[node.loc.filename]).code;
-  }
+  it("can build hierarchy", done => {
+    config.name = undefined;
+    config.hierarchy = ["data/dep2", "data/subdir/dep1", "data/dep3"];
+    const groups = [];
+    compiler.compile(config, ({ast, code, name})=>{
+      groups.push(gcode(ast.body[0], code));
+    });
+    expect(groups[0]).to.be(`define("data/dep2",["require","exports","module"],function(require,exports,module){return true});`);
+    expect(groups[1]).to.be(`define("data/subdir/dep1",["require","exports","module","data/dep2"],function(require,exports,module){var dep2=require("../dep2");module.onUnload(function(){dep1.testUnload=true});var count=0;return dep1;function dep1(){var name="data/dep2";return dep2===require(name)&&++count===1};});`);
+    expect(groups[2]).to.be(`define("data/dep3",["require","exports","module","data/dep2"],function(require,exports,module){const dep2=require("./dep2");return true});`);
+    expect(groups.length).to.be(3);
+    done();
+  });
+
+  const gcode = (node, code)=> generate(
+    {type: 'Program', body: [node]}, {minified: true, comments: false},
+    node && code[node.loc.filename]).code;
 
 });
