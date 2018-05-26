@@ -8,11 +8,11 @@ const config = {
   baseUrl: path.resolve(__dirname),
 };
 
-describe("Compiling modules", function () {
+describe("Compiling modules", ()=>{
   it("can combine modules", done => {
     config.name =  "data/compile-top";
 
-    compiler.compile(config, function ({ast, code}) {
+    compiler.compile(config, ({ast, code})=>{
       expect(ast.type).to.be("Program");
       expect(ast.body.length).to.be(8);
       expect(Object.keys(code).sort()).to.eql([
@@ -26,7 +26,7 @@ describe("Compiling modules", function () {
         '/data/subdir/dep1.js',
       ]);
       expect(gcode(ast.body[0], code)).to
-        .be('define("data/dep2",["require","exports","module"],function(require,exports,module){return true});');
+        .be('define("data/dep2",["require","exports","module"],(require,exports,module)=>true);');
 
       expect(gcode(ast.body[1], code)).to
         .be('define("data/subdir/dep1",["require","exports","module","data/dep2"],function(require,exports,module){var dep2=require("../dep2");module.onUnload(function(){dep1.testUnload=true});var count=0;return dep1;function dep1(){var name="data/dep2";return dep2===require(name)&&++count===1};});');
@@ -51,14 +51,14 @@ describe("Compiling modules", function () {
     var myConfig = {
       baseUrl: config.baseUrl,
       name: "data/compile-deps",
-      onBuildRead: function (mod, contents) {
+      onBuildRead(mod, contents) {
         if (mod.id === 'data/compile-deps-1') {
           return contents.toString().replace(/foo/g, 'fooBar');
         }
         return contents;
       }
     };
-    compiler.compile(myConfig, function ({ast, code}) {
+    compiler.compile(myConfig, ({ast, code})=>{
       expect(ast.type).to.be("Program");
       expect(ast.body.length).to.be(4);
       expect(gcode(ast.body[0], code)).to
@@ -80,10 +80,11 @@ describe("Compiling modules", function () {
   it("can compile es6", done => {
     config.name = "data/compile-es6";
     let called = false;
-    compiler.compile(config, function ({ast, code}) {
+    compiler.compile(config, ({ast, code})=>{
       expect(ast.type).to.be("Program");
-      expect(ast.body.length).to.be(1);
-      expect(gcode(ast.body[0], code)).to.be('define("data/compile-es6",["require"],require=>require("data/dep2"));');
+      expect(gcode(ast.body[0], code)).to.be('define("data/dep2",["require","exports","module"],(require,exports,module)=>true);');
+      expect(gcode(ast.body[1], code)).to.be('define("data/compile-es6",["require","data/dep2"],require=>{return require("data/dep2")});');
+      expect(ast.body.length).to.be(2);
       called = true;
     });
     expect(called).to.be(true);
@@ -97,7 +98,7 @@ describe("Compiling modules", function () {
     compiler.compile(config, ({ast, code, name})=>{
       groups.push(gcode(ast.body[0], code));
     });
-    expect(groups[0]).to.be(`define("data/dep2",["require","exports","module"],function(require,exports,module){return true});`);
+    expect(groups[0]).to.be(`define("data/dep2",["require","exports","module"],(require,exports,module)=>true);`);
     expect(groups[1]).to.be(`define("data/subdir/dep1",["require","exports","module","data/dep2"],function(require,exports,module){var dep2=require("../dep2");module.onUnload(function(){dep1.testUnload=true});var count=0;return dep1;function dep1(){var name="data/dep2";return dep2===require(name)&&++count===1};});`);
     expect(groups[2]).to.be(`define("data/dep3",["require","exports","module","data/dep2"],function(require,exports,module){const dep2=require("./dep2");return true});`);
     expect(groups.length).to.be(3);

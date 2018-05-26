@@ -11,13 +11,13 @@ a module and all modules dependant on it. It also trys to help find
 where loading failed due to syntax/loading errors and dependency
 cycles.
 
-Only modern browsers and NodeJS >= 6 are supported.
+Only modern browsers and NodeJS >= version 8 are supported.
 
 
 ## Install
 
 ```sh
-npm i yaajs
+npm i yaajs --save
 ```
 
 ## Use
@@ -54,7 +54,7 @@ $ tools/run-tests
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Geoff Jacobsen <geoffjacobsen@gmail.com>
+Copyright (c) 2016-2018 Geoff Jacobsen <geoffjacobsen@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

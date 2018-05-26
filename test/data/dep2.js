@@ -1,3 +1,1 @@
-define(function(require, exports, module) {
-  return true;
-});
+define((require, exports, module) => true);

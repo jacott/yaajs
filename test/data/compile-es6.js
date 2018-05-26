@@ -1,4 +1,5 @@
 /*global define */
 
-
-define(["require"], require => require('data/dep2'));
+define(require =>{
+  return require('data/dep2');
+});
