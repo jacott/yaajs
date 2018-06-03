@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 Error.stackTraceLimit = 100;
 
-var Path = require('path');
-var fs = require('fs');
+const Path = require('path');
+const fs = require('fs');
 
-var compiler = require('../lib/compiler');
-const {parse} = require('babylon');
-const generate = require('babel-generator').default;
+const compiler = require('../lib/compiler');
 
 // Converts more types than JSON.stringify including functions
-function stringify(value) {
+const stringify = value =>{
   if (value == null) return ''+value;
   switch (typeof value) {
   case 'object':
@@ -31,27 +29,27 @@ function stringify(value) {
   default:
     return JSON.stringify(value);
   }
-}
+};
 
-var clientCfg = {baseUrl: "/"};
+const clientCfg = {baseUrl: "/"};
 
-var baseDir = Path.resolve(__dirname+'/..');
+const baseDir = Path.resolve(__dirname+'/..');
 
-var buildDir = Path.resolve(Path.join(baseDir, 'build'));
+const buildDir = Path.resolve(Path.join(baseDir, 'build'));
 
-var topDir = Path.join(baseDir, 'test');
+const topDir = Path.join(baseDir, 'test');
 
 process.chdir(topDir);
 
-var cfgStr = "yaajs.config(" + stringify(clientCfg) + ");\n";
+const configCode = "yaajs.config(" + stringify(clientCfg) + ");\n";
 
-var compileConfig = {
+const compileConfig = {
   baseUrl: topDir,
 
   // // example onBuildRead
-  // onBuildRead: function (mod, contents) {
+  // onBuildRead(mod, contents) {
   //   if (mod.id === 'css/loader')
-  //     return "define({loadAll: function(){}});";
+  //     return "define({loadAll(){}});";
 
   //   if (mod.id === 'client') {
   //     contents = fs.readFileSync(Path.join(topDir, "foo.js")).toString();
@@ -67,27 +65,42 @@ var compileConfig = {
 
 try {fs.mkdirSync(buildDir);} catch(ex) {}
 
+const astConfig = {
+  parse: {},
+  compress: false,
+  mangle: false,
+  output: {
+    ast: true,
+    code: false,
+  }
+};
 
+const parse = (codeIn, codeFilename)=> compiler.parse(codeIn, astConfig).ast;
 
 try {
-  compiler.compile(compileConfig, function ({ast, code: codeMap}) {
+  compiler.compile(compileConfig, ({ast, code: codeMap})=>{
     const yaajsCode = fs.readFileSync(require.resolve('yaajs/yaa.js')).toString();
     codeMap['/index.js'] = yaajsCode;
-    const yaajsAst = parse(yaajsCode, {sourceType: 'module', sourceFilename: '/index.js'}).program;
-    codeMap['/__config__.js'] = cfgStr;
-    const cfgStrAst = parse(cfgStr, {sourceType: 'module', sourceFilename: '/__config__.js'}).program;
-    ast.body.splice(0, 0, yaajsAst, cfgStrAst);
+    const yaajsAst = parse(yaajsCode, '/index.js');
+    codeMap['/__config__.js'] = configCode;
+    var configCodeAst = parse(configCode, '/__config__.js');
+    ast.body.splice(0, 0, yaajsAst, configCodeAst);
 
     console.log('generate...');
-    const { code, map } = generate(ast, {
-      comments: false,
-      compact: true,
-      sourceMaps: true,
-    }, codeMap);
+    const {code, error} = compiler.parse(ast, {
+      compress: false,
+      mangle: false,
+      output: {
+        beautify: true,
+        indent_level: 2,
+        ast: false,
+        code: true,
+      }
+    });
+    if (error) throw error;
     console.log('done');
 
     fs.writeFileSync(compileConfig.out, code);
-    fs.writeFileSync(compileConfig.out+'.map', JSON.stringify(map));
   });
 } catch(ex) {
   process.stderr.write(ex.stack);

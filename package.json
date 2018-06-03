@@ -1,7 +1,7 @@
 {
   "name": "yaajs",
   "description": "Yet another requirejs library for loading AMD modules",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "author": "Geoff Jacobsen <geoffjacobsen@gmail.com>",
   "license": "MIT",
   "main": "lib/index",
@@ -14,7 +14,6 @@
     "test": "tools/run-tests"
   },
   "devDependencies": {
-    "babel-generator": "^6.26.1",
     "expect.js": "^0.3.1",
     "mocha": "^5.2.0"
   },
@@ -23,9 +22,7 @@
     "Asynchronous Module Definition"
   ],
   "dependencies": {
-    "babel-traverse": "^6.25.0",
-    "babel-types": "^6.26.0",
-    "babylon": "^6.18"
+    "terser": "^3.7.6"
   },
   "engines": {
     "node": ">=8.9"
