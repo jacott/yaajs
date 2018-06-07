@@ -7,5 +7,6 @@ define(function(require, exports, module) {
     require('config-test')(expect);
     require('plugin-test')(expect);
     require('graph-test')(expect);
+    require('pause-test')(expect);
   };
 });
