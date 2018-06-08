@@ -1,29 +1,35 @@
-/*global yaajs*/
-define(function(require, exports, module) {
-  var simple = require('data/simple-plugin!./flux');
+define((require, exports, module)=>{
+  const ctx = module.ctx;
+  const Module = module.constructor;
 
-  var ctx = module.ctx;
-  var Module = module.constructor;
-
-  return function (expect) {
-
-    describe(module.id, function () {
-      afterEach(function () {
+  return expect =>{
+    let myCtx;
+    describe(module.id, ()=>{
+      beforeEach(()=>{
+        myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
+      });
+      afterEach(()=>{
         ctx.constructor.remove("my ctx");
       });
 
-      it("uses normalizeId by default", function () {
-        expect(simple).to.be("simple flux");
+      it("uses normalizeId by default", (done)=>{
+        require('data/simple-plugin!./flux', simple =>{
+          try {
+            expect(simple).to.be("simple flux");
+            done();
+          } catch(ex) {
+            done(ex);
+          }
+        });
       });
 
-      it("handles errors", function (done) {
-        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-        myCtx.require('data/error-plugin!foo', function () {
+      it("handles onload.error", (done)=>{
+        myCtx.require('data/error-plugin!foo', ()=>{
           done(new Error("unexpected"));
-        }, function (error) {
+        }, (error)=>{
           try {
             expect(error.message).to.be("Module: data/error-plugin!foo - foo");
-            setTimeout(function () {
+            setTimeout(()=>{
               try {
                 expect(myCtx.modules['data/error-plugin!foo']).to.be(undefined);
                 done();
@@ -37,14 +43,30 @@ define(function(require, exports, module) {
         });
       });
 
-      it("can double require a plugin", function (done) {
-        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-        var count = 2;
-        myCtx.require('data/simple-plugin!foo', assertOk);
+      // server only; can't catch on client ¯\_(ツ)_/¯
+      (typeof window === 'undefined'
+      ) && it("recovers from load error", (done)=>{
+        const onError = myCtx.onError;
+        myCtx.onError = (v)=>{
+          setTimeout(()=>{
+            try {
+              expect(v.module.id).to.be('data/syntax-error');
+              expect(myCtx.depCount).to.be(0);
+              expect(myCtx.resolvingCount).to.be(0);
+              done();
+            } catch(ex) {
+              done(ex);
+            }
+          }, 0);
+        };
+        myCtx.require('data/plugin-load-error', ()=>{
+          expect().fail("should not get here");
+        });
+      });
 
-        myCtx.require('data/simple-plugin!foo', assertOk);
-
-        function assertOk(result) {
+      it("can double require a plugin", (done)=>{
+        let count = 2;
+        const assertOk = (result)=>{
           try {
             expect(result).to.be("simple foo");
             --count || done();
@@ -52,21 +74,24 @@ define(function(require, exports, module) {
           catch (ex) {
             done(ex);
           }
-        }
+        };
+
+        myCtx.require('data/simple-plugin!foo', assertOk);
+
+        myCtx.require('data/simple-plugin!foo', assertOk);
 
       });
 
-      it("maps un-normalized correctly", function () {
-        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-        var pmod = new Module(myCtx, 'foo');
-        var caller = new Module(myCtx, 'baz');
-        var loadCount = 0;
-        pmod.exports = {load: function (name, req, onLoad) {
+      it("maps un-normalized correctly", ()=>{
+        const pmod = new Module(myCtx, 'foo');
+        const caller = new Module(myCtx, 'baz');
+        let loadCount = 0;
+        pmod.exports = {load(name, req, onLoad) {
           ++loadCount;
         }};
-        var plugin = new Module.Plugin(pmod);
-        var myMod = plugin.fetch("./unnorm", caller);
-        var myMod2 = plugin.fetch("unnorm");
+        const plugin = new Module.Plugin(pmod);
+        const myMod = plugin.fetch("./unnorm", caller);
+        const myMod2 = plugin.fetch("unnorm");
         expect(myCtx.resolvingCount).to.be(4);
         expect(myMod.id).to.equal('');
         expect(plugin.waiting['baz']['./unnorm'][0]).to.be(caller);
@@ -82,10 +107,9 @@ define(function(require, exports, module) {
         expect(myCtx.depCount).to.equal(0);
       });
 
-      it("calls callbacks", function (done) {
-        var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-        var waitCount = 2;
-        myCtx.require('data/foo-plugin!junk/here/fuzz', function (fuzz) {
+      it("calls callbacks", (done)=>{
+        let waitCount = 2;
+        myCtx.require('data/foo-plugin!junk/here/fuzz', (fuzz)=>{
           try {
             expect(fuzz).to.eql("hello fuzz");
             --waitCount || done();
@@ -94,11 +118,11 @@ define(function(require, exports, module) {
           }
         }, done);
 
-        myCtx.require('data/foo-plugin', function (plugin) {
-          var oCtx = Module.currentCtx;
+        myCtx.require('data/foo-plugin', (plugin)=>{
+          const oCtx = Module.currentCtx;
           try {
             Module.currentCtx = myCtx;
-            define("foo5", ['data/foo-plugin!fuzz'], function (fuzz1) {
+            define("foo5", ['data/foo-plugin!fuzz'], (fuzz1)=>{
               try {
                 expect(fuzz1).to.eql("hello fuzz");
                 expect(Module.currentCtx).to.be(myCtx);
@@ -107,7 +131,7 @@ define(function(require, exports, module) {
                 done(ex);
               }
             });
-            var fuzz = myCtx.modules['data/foo-plugin!fuzz'];
+            const fuzz = myCtx.modules['data/foo-plugin!fuzz'];
             fuzz.delayLoad();
           } finally {
             Module.currentCtx = oCtx;

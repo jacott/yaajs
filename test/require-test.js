@@ -126,19 +126,24 @@ define(function(require, exports, module) {
         expect(expErr.toString()).to.match(/bang!/);
       });
 
-      // server only; mocha on browser seems to unconditionally catch syntax errors
+      // server only; can't catch on client ¯\_(ツ)_/¯
       typeof window === 'undefined' &&
         it("should handle syntax errors", function (done) {
           var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-          myCtx.require('data/syntax-error', function () {done('fail')},
-                        function (error, mod) {
-                          try {
-                            expect(error).to.be.a(SyntaxError);
-                            done();
-                          } catch (ex) {
-                            done(ex);
-                          }
-                        });
+          myCtx.require('data/syntax-error', function () {
+            try {
+              expect().fail("should not have loaded module");
+            } catch(ex) {
+              done(ex);
+            }
+          }, function (error, mod) {
+            try {
+              expect(error).to.be.a(SyntaxError);
+              done();
+            } catch (ex) {
+              done(ex);
+            }
+          });
         });
 
       it("should not need a define by default", function (done) {
