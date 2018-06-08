@@ -5,6 +5,7 @@ const Path = require('path');
 const fs = require('fs');
 
 const compiler = require('../lib/compiler');
+const {terser} = compiler;
 
 // Converts more types than JSON.stringify including functions
 const stringify = value =>{
@@ -43,25 +44,6 @@ process.chdir(topDir);
 
 const configCode = "yaajs.config(" + stringify(clientCfg) + ");\n";
 
-const compileConfig = {
-  baseUrl: topDir,
-
-  // // example onBuildRead
-  // onBuildRead(mod, contents) {
-  //   if (mod.id === 'css/loader')
-  //     return "define({loadAll(){}});";
-
-  //   if (mod.id === 'client') {
-  //     contents = fs.readFileSync(Path.join(topDir, "foo.js")).toString();
-  //     return contents;
-  //   }
-
-  //   return contents;
-  // },
-
-  name: 'data/compile-top',
-  out: Path.join(buildDir, "index.js"),
-};
 
 try {fs.mkdirSync(buildDir);} catch(ex) {}
 
@@ -75,32 +57,52 @@ const astConfig = {
   }
 };
 
-const parse = (codeIn, codeFilename)=> compiler.parse(codeIn, astConfig).ast;
+const yaajsCode = fs.readFileSync(require.resolve('yaajs/yaa.js')).toString();
+const opts = {filename: 'index.js'};
+opts.toplevel = terser.parse(yaajsCode, opts);
+opts.filename = '__config__.js';
+const toplevel = terser.parse(configCode, opts);
 
+const out = Path.join(buildDir, "index.js");
 try {
-  compiler.compile(compileConfig, ({ast, code: codeMap})=>{
-    const yaajsCode = fs.readFileSync(require.resolve('yaajs/yaa.js')).toString();
-    codeMap['/index.js'] = yaajsCode;
-    const yaajsAst = parse(yaajsCode, '/index.js');
-    codeMap['/__config__.js'] = configCode;
-    var configCodeAst = parse(configCode, '/__config__.js');
-    ast.body.splice(0, 0, yaajsAst, configCodeAst);
+  compiler.compile({
+    contextConfig: {
+      baseUrl: topDir,
+    },
 
-    console.log('generate...');
-    const {code, error} = compiler.parse(ast, {
-      compress: false,
-      mangle: false,
-      output: {
-        beautify: true,
-        indent_level: 2,
-        ast: false,
-        code: true,
-      }
-    });
-    if (error) throw error;
-    console.log('done');
+    // /** example onBuildRead **/
+    // onBuildRead(mod, contents) {
+    //   if (mod.id === 'css/loader')
+    //     return "define({loadAll(){}});";
+    //
+    //   if (mod.id === 'client') {
+    //     contents = fs.readFileSync(Path.join(topDir, "foo.js")).toString();
+    //     return contents;
+    //   }
+    //
+    //   return contents;
+    // },
 
-    fs.writeFileSync(compileConfig.out, code);
+    name: 'data/compile-top',
+    out,
+    callback({ast, code: codeMap}) {
+
+      console.log('minify...');
+      const {code, error} = terser.minify(ast, {
+        compress: true,
+        mangle: true,
+        output: {
+          // beautify: true,
+          // indent_level: 2,
+          ast: false,
+          code: true,
+        }
+      });
+      if (error) throw error;
+      console.log('done');
+
+      fs.writeFileSync(out, code);
+    }
   });
 } catch(ex) {
   process.stderr.write(ex.stack);
