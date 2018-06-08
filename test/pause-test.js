@@ -16,7 +16,7 @@ define((require, exports, module)=>{
       });
 
       it("should handle dependencies", ()=>{
-        myCtx.paused = true;
+        Module.pause(myCtx);
         const order = [];
         Module.define("m1", ['module', 'm2'], (module)=>{
           order.push(module.id);
@@ -32,13 +32,13 @@ define((require, exports, module)=>{
 
         expect(order).to.eql([]);
 
-        Module._unpause(myCtx);
+        Module.unpause(myCtx);
 
         expect(order).to.eql(['m2', 'm1', 'm3']);
       });
 
       it("should break cycles", ()=>{
-        myCtx.paused = true;
+        Module.pause(myCtx);
         const order = [];
         Module.define("m1", ['module', 'm2'], (module)=>{
           order.push(module.id);
@@ -54,14 +54,17 @@ define((require, exports, module)=>{
 
         expect(order).to.eql([]);
 
-        Module._unpause(myCtx);
+        Module.unpause(myCtx);
 
         expect(order).to.eql(['m3', 'm2', 'm1']);
       });
 
-      it.only("should work with plugins", ()=>{
-        myCtx.paused = true;
+      it("should work with plugins", ()=>{
+        Module.pause(myCtx);
         const order = [];
+
+        Module.define("b1", "b1exp");
+
         Module.define("p1", {
           load(name, req, onload, config) {
             order.push('p1', name);
@@ -69,23 +72,33 @@ define((require, exports, module)=>{
           }
         });
 
+        Module.define("p2", {
+          load(name, req, onload, config) {
+            order.push('p2', name);
+            onload("p2Foo");
+          }
+        });
+
         Module.define("m1", [
-          'require', 'exports', 'module', 'p1!foo'
+          'require', 'exports', 'module', 'p1!foo',
+          'p2', // cause p2 to resolve early
         ], (
           require, exports, module, p1foo
         )=>{
           order.push(module.id, p1foo);
         });
 
-        Module.define("m3", ['module', 'm1'], (module, m1, m2)=>{
+        Module.define("m3", ['module', 'm1', 'p2!foo2'], (module, m1, p2)=>{
           order.push(module.id);
         });
 
         expect(order).to.eql([]);
 
-        Module._unpause(myCtx);
+        Module.unpause(myCtx);
 
-        expect(order).to.eql(['p1', 'foo', 'm1', 'realFoo', 'm3']);
+        Module.breakCycle(myCtx);
+
+        expect(order).to.eql(['p1', 'foo', 'p2', 'foo2', 'm1', 'realFoo', 'm3']);
       });
     });
   };

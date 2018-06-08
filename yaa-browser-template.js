@@ -90,13 +90,13 @@
   global.yaajs.config = mainCtx.config.bind(mainCtx);
 
   if (mainModuleId != null) {
-    mainCtx.paused = true;
+    Module.pause(mainCtx);
     mainModuleId = mainCtx.normalizeId(mainModuleId);
     setTimeout(()=>{
       if (! mainCtx.modules[mainModuleId]) {
         mainCtx.loadModule(new Module(mainCtx, mainModuleId));
       }
-      Module._unpause(mainCtx);
+      Module.unpause(mainCtx);
     }, 0);
   }
 }).call(null, window);
