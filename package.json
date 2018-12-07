@@ -1,7 +1,7 @@
 {
   "name": "yaajs",
   "description": "Yet another requirejs library for loading AMD modules",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "author": "Geoff Jacobsen <geoffjacobsen@gmail.com>",
   "license": "MIT",
   "main": "lib/index",
@@ -22,7 +22,7 @@
     "Asynchronous Module Definition"
   ],
   "dependencies": {
-    "terser": "^3.7.6"
+    "terser": "^3.11.0"
   },
   "engines": {
     "node": ">=8.9"

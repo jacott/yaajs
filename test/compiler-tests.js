@@ -33,6 +33,22 @@ describe("Compiling modules", ()=>{
     assert.equal(ast.body.length, 8);
   });
 
+  it("can compile unusual defines", ()=>{
+    let ast;
+    compiler.compile({name: "data/funny-define", contextConfig, callback(r) {ast = r.ast}});
+    assert.equal(ast.TYPE, "Toplevel");
+    let code = gcode(ast);
+    assertAst(ast, [
+      `(function(global,factory){typeof exports==="object"&&typeof module!=="undefined"`,
+      `?factory(exports):typeof define==="function"&&define.amd?`,
+      `define("data/funny-define",["exports"],factory):`,
+      `factory(global.d3=global.d3||{})})`,
+      `(this,function(exports){exports.foo=123;`,
+      `function define(){}const define=()=>{};`,
+      `let a,b,c;define(a,b,c)});`
+    ]);
+  });
+
   it("can detech require dependencies", ()=>{
     let ast;
     compiler.compile({
