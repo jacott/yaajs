@@ -1,29 +1,21 @@
-(function () {
-  var mocha = window.mocha;
-  var expect = window.expect;
+(()=>{
+  const {yaajs, mocha, expect} = window;
+  let run = false;
+
+  yaajs.config().onError = (error, mod)=>{
+    describe('test Loading', ()=>{
+      it('failed', ()=>{
+        expect().fail("test loading failed: " + error + ": " +  mod.id);
+      });
+    });
+    run || mocha.run();
+    throw error;
+  };
 
   mocha.setup('bdd');
 
-  var run = false;
-
-  define(function(require, exports, module) {
-    var testSuite = require('test-suite');
-
-    module.ctx.onError = function (error, mod) {
-      describe('test Loading', function () {
-        it('failed', function () {
-          expect().fail("test loading failed: " + error + ": " +  mod.id);
-        });
-      });
-      run || mocha.run();
-      throw error;
-    };
-
-    describe("Browser only tests", function () {
-      it("should set main module", function () {
-        expect(module.ctx.modules['browser-tests']).to.be(module);
-      });
-    });
+  define((require, exports, module)=>{
+    const testSuite = require('test-suite');
 
     testSuite(expect);
     run = true;
