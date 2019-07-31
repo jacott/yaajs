@@ -17,7 +17,7 @@ Only modern browsers and NodeJS >= version 8 are supported.
 ## Install
 
 ```sh
-npm i yaajs --save
+npm i yaajs
 ```
 
 ## Use
@@ -47,14 +47,14 @@ Config options are:
 ## Testing / Developing
 
 ```sh
-$ tools/run-tests
+$ npm t
 ```
 
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2016-2018 Geoff Jacobsen <geoffjacobsen@gmail.com>
+Copyright (c) 2016-2019 Geoff Jacobsen <geoffjacobsen@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
