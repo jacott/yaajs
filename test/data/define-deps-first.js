@@ -2,6 +2,7 @@ define(['data/dep2', 'require', 'data/subdir/dep1', 'exports', 'module'], functi
   if (typeof require !== 'function') return "expected to be passed require";
   if (typeof exports !== 'object') return "expected to be passed exports";
   if (this !== (typeof window === "undefined" ? global: window)) return "expected to be called with global/window";
+  if (this !== globalThis) return "expected to be called with globalThis";
   if (dep2 !== true) return "expected dep2 to be loaded";
   if (typeof dep1 !== 'function') return "expected dep1 to be loaded";
 

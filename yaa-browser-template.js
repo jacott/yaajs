@@ -1,11 +1,14 @@
-(global =>{
+{
+  if (window.globalThis === void 0)
+    window.globalThis = window;
+
   ___INSERT___
 
   Context.Module = Module;
 
   let pendingCounter = 0;
 
-  Context.prototype.loadModule = function (mod) {
+  Context.prototype.loadModule = mod =>{
     const node = document.createElement('script');
     node.async = true;
     node.charset = 'utf-8';
@@ -20,12 +23,12 @@
     document.head.appendChild(node);
   };
 
-  Context.prototype.undef = function (mod) {
-    mod.node &&
+  Context.prototype.undef = mod =>{
+    mod.node !== void 0 &&
       mod.node.parentNode.removeChild(mod.node);
   };
 
-  global.define = Module.define;
+  window.define = Module.define;
 
   const onLoad = event =>{
     const script = event.target !== window && event.target;
@@ -43,8 +46,8 @@
       if (script == null) return;
     }
     const mod = script._yaajsModule;
-    if (mod === undefined) return;
-    script._yaajsModule = undefined;
+    if (mod === void 0) return;
+    script._yaajsModule = void 0;
     script.removeEventListener('load', onLoad);
     if (--pendingCounter === 0) {
       window.removeEventListener('error', onLoad, true);
@@ -69,8 +72,8 @@
     }
 
     const gdr = Module._globalDefineResult;
-    Module._globalDefineResult = undefined;
-    if (gdr !== undefined)
+    Module._globalDefineResult = void 0;
+    if (gdr !== void 0)
       Module._prepare(this, gdr[1], gdr[2], gdr[3]);
     else
       return this._nodefine();
@@ -86,8 +89,8 @@
   }
   const mainCtx = Module.currentCtx = new Context({baseUrl: baseUrl || './'});
 
-  global.yaajs = mainCtx.require;
-  global.yaajs.config = mainCtx.config.bind(mainCtx);
+  window.yaajs = mainCtx.require;
+  window.yaajs.config = mainCtx.config.bind(mainCtx);
 
   if (mainModuleId != null) {
     Module.pause(mainCtx);
@@ -99,4 +102,4 @@
       Module.unpause(mainCtx);
     }, 0);
   }
-}).call(null, window);
+}

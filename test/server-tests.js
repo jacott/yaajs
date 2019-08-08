@@ -1,6 +1,6 @@
-var yaajs = global.yaajs = require('../');
-var expect = require('expect.js');
-var path = require('path');
+const yaajs = global.yaajs = require('../');
+const expect = require('expect.js');
+const path = require('path');
 
 yaajs.nodeRequire = require;
 
