@@ -6,4 +6,4 @@ yaajs.nodeRequire = require;
 
 yaajs.module.ctx.config({baseUrl: path.resolve(__dirname)});
 
-yaajs("./test-suite", function (testSuite) {testSuite(expect)});
+yaajs("./test-suite", testSuite =>{testSuite(expect)});

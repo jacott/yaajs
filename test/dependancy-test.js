@@ -1,16 +1,16 @@
 /*global yaajs*/
-define(function(require, exports, module) {
-  var modBuilder = require('./mod-builder');
+define((require, exports, module)=>{
+  const modBuilder = require('./mod-builder');
 
-  var ctx = module.ctx;
-  var Module = module.constructor;
+  const {ctx} = module;
+  const Module = module.constructor;
 
-  return function (expect) {
-    describe(module.id, function () {
-      var myCtx, mods, v;
-      var prepare, depGraph;
+  return expect =>{
+    describe(module.id, ()=>{
+      let myCtx, mods, v;
+      let prepare, depGraph;
 
-      beforeEach(function () {
+      beforeEach(()=>{
         v = {};
         myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
         mods = myCtx.modules;
@@ -18,11 +18,11 @@ define(function(require, exports, module) {
         depGraph = mb.depGraph;
         prepare = mb.prepare;
       });
-      afterEach(function () {
+      afterEach(()=>{
         ctx.constructor.remove("my ctx");
       });
 
-      it("should depend on a ready module", function () {
+      it("should depend on a ready module", ()=>{
         depGraph("3d2");
 
         mods.m2._ready();
@@ -35,14 +35,14 @@ define(function(require, exports, module) {
         expect(mods.m2._requiredBy).to.eql({ m3: 1, m1: 1 });
       });
 
-      it("should unload correctly", function () {
+      it("should unload correctly", ()=>{
         depGraph("1d2,6,7,10 2d4,3 3d4,5 4d3");
 
         depGraph("8d9,10");
 
         prepare(mods.m6);
 
-        myCtx.onError = function (err) {};
+        myCtx.onError = err =>{};
         mods.m5._error("foo");
 
         expect(myCtx.resolvingCount).to.be(3);
@@ -51,7 +51,7 @@ define(function(require, exports, module) {
         expect(Object.keys(myCtx.waitReady)).to.eql(['m8']);
       });
 
-      it("will throw exception if enforceAcyclic", function () {
+      it("will throw exception if enforceAcyclic", ()=>{
         myCtx.config({enforceAcyclic: true});
 
         try {
@@ -144,6 +144,12 @@ define(function(require, exports, module) {
           m2: [ 'result_m4', 'result_m3' ],
           m1: [ 'result_m2' ] });
         expect(mods.m4._requiredBy).to.eql({ m2: 1, m3: 0 });
+      });
+
+      it("should allow modules without a context", ()=>{
+        const mod = new Module(void 0, "my/module");
+        expect(mod.id).to.be("my/module");
+        expect(mod.ctx).to.be(void 0);
       });
     });
   };

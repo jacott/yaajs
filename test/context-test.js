@@ -1,17 +1,21 @@
 /*global yaajs*/
-define(function(require, exports, module) {
-  var Context = module.ctx.constructor;
+define((require, exports, module)=>{
+  const Context = module.ctx.constructor;
 
-  return function (expect) {
-    describe(module.id, function () {
-      var ctx;
-      beforeEach(function () {ctx = new Context({context: "my ctx"})});
-      afterEach(function () {Context.remove("my ctx")});
-      it("should call _onConfig after changing settings", function () {
-        var orig = Context._onConfig;
-        var called, baseUrl;
-        after(function () {Context._onConfig = orig});
-        Context._onConfig = function (ctx) {
+  return expect =>{
+    describe(module.id, ()=>{
+      let ctx;
+
+      beforeEach(()=>{ctx = new Context({context: "my ctx"})});
+      afterEach(()=>{Context.remove("my ctx")});
+
+      it("should call _onConfig after changing settings", ()=>{
+        const orig = Context._onConfig;
+        let called, baseUrl;
+
+        after(()=>{Context._onConfig = orig});
+
+        Context._onConfig = ctx =>{
           baseUrl =  ctx.baseUrl;
           called = true;
         };
@@ -20,7 +24,7 @@ define(function(require, exports, module) {
         expect(baseUrl).to.be("foo/");
       });
 
-      it("should set paths", function () {
+      it("should set paths", ()=>{
         ctx.config({
           paths: {
             foobar: "data/subdir",

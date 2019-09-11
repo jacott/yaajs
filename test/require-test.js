@@ -1,17 +1,17 @@
 /*global yaajs*/
-define(function(require, exports, module) {
-  var ctx = module.ctx;
-  var Module = module.constructor;
+define((require, exports, module)=>{
+  const {ctx} = module;
+  const Module = module.constructor;
 
-  return function (expect) {
-    describe(module.id, function () {
-      afterEach(function () {
+  return expect =>{
+    describe(module.id, ()=>{
+      afterEach(()=>{
         ctx.constructor.remove("my ctx");
       });
 
-      it("should handle circular dependancies", function (done) {
+      it("should handle circular dependancies", done =>{
         var myCtx = new ctx.constructor({context: 'my ctx', baseUrl: ctx.baseUrl});
-        myCtx.require('data/circular1', function (circular1) {
+        myCtx.require('data/circular1', circular1 =>{
           try {
             expect(circular1).to.eql({c1: true, c2: true, c3: true});
             done();
