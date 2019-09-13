@@ -1,4 +1,4 @@
-{
+(()=>{
   if (window.globalThis === void 0)
     window.globalThis = window;
 
@@ -102,4 +102,4 @@
       Module.unpause(mainCtx);
     }, 0);
   }
-}
+})();
