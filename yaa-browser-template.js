@@ -30,6 +30,25 @@
 
   window.define = Module.define;
 
+  const loadComplete = (mod, event)=>{
+    if (mod.state > Module.LOADING || mod.state < 0)
+      return;
+
+    if (event.type === 'error') {
+      const error = mod.newError(event.message || 'failed to load', event.message || 'onload');
+      error.event = event;
+      mod._error(error);
+      return;
+    }
+
+    const gdr = Module._globalDefineResult;
+    Module._globalDefineResult = void 0;
+    if (gdr !== void 0)
+      Module._prepare(mod, gdr[1], gdr[2], gdr[3]);
+    else
+      return mod._nodefine();
+  };
+
   const onLoad = event =>{
     const script = event.target !== window && event.target;
     if (script == null) {
@@ -52,32 +71,11 @@
     if (--pendingCounter === 0) {
       window.removeEventListener('error', onLoad, true);
     }
-    loadComplete.call(mod, event);
+    loadComplete(mod, event);
 
     if (--mod.ctx.loadingCount === 0)
       Module.breakCycle(mod.ctx);
   };
-
-  function loadComplete(event) {
-    const {node} = this;
-
-    if (this.state > Module.LOADING || this.state < 0)
-      return;
-
-    if (event.type === 'error') {
-      const error = this.newError(event.message || 'failed to load', event.message || 'onload');
-      error.event = event;
-      this._error(error);
-      return;
-    }
-
-    const gdr = Module._globalDefineResult;
-    Module._globalDefineResult = void 0;
-    if (gdr !== void 0)
-      Module._prepare(this, gdr[1], gdr[2], gdr[3]);
-    else
-      return this._nodefine();
-  }
 
   const yaaScript = document.querySelector('script[data-main]');
   let mainModuleId = yaaScript && yaaScript.getAttribute('data-main');
