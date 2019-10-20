@@ -4,6 +4,7 @@ define(function(require, exports, module) {
   const defineObject = require('./data/define-object');
   const defineNoDeps = require('data/define-no-deps');
   const defineDepsFirst = require('./data/define-deps-first');
+  const TestUnload = require('./data/test-unload');
   const Module = module.constructor;
 
   return function (expect) {
@@ -87,6 +88,12 @@ define(function(require, exports, module) {
             done(ex);
           }
         });
+      });
+
+      it('should call all unloads', ()=>{
+        expect(TestUnload.unloadCount).to.be(2);
+        TestUnload.module.unload();
+        expect(TestUnload.unloadCount).to.be(0);
       });
 
       it('should allow dependencies as first argument', function () {
