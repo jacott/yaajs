@@ -75,9 +75,20 @@ define(function(require, exports, module) {
       it('should (un)load nested dependencies', function (done) {
         expect(dep1).to.be.a('function');
         expect(dep1()).to.be(true);
-        var dep2Mod = module.ctx.modules[module.normalizeId('./data/dep2')];
+        const dep1Mod = module.ctx.modules[module.normalizeId('./data/subdir/dep1')];
+        const dep2Mod = module.ctx.modules[module.normalizeId('./data/dep2')];
         expect(dep1.testUnload).to.not.be.ok();
+        let unloadCount = 2;
+        dep1Mod.onUnload(()=>{
+          if (unloadCount == 1) unloadCount = 0;
+        });
+        dep2Mod.onUnload(()=>{
+          if (unloadCount == 2)
+            unloadCount = 1;
+        });
         dep2Mod.unload();
+        // ensure unload callbacks for suppliers happen before consumers
+        expect(unloadCount).to.be(0);
         expect(dep1.testUnload).to.be(true);
         require('data/subdir/dep1', function (obj) {
           try {
