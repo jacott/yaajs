@@ -50,7 +50,7 @@
   };
 
   const onLoad = event =>{
-    const script = event.target !== window && event.target;
+    let script = event.target === window ? null : event.target;
     if (script == null) {
       const fn = event.filename;
       if (fn != null) {
