@@ -7,7 +7,7 @@ javascript library. This is an alternative to
 The main goals of Yaajs are to be more hackable with improved support
 for testing, development and debugging. In particular Yaajs manages a
 module dependancy graph and provides a `Module#unload` method to remove
-a module and all modules dependant on it. It also trys to help find
+a module and all modules dependant on it. It also tries to help find
 where loading failed due to syntax/loading errors and dependency
 cycles.
 
