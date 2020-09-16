@@ -84,7 +84,7 @@ describe("Compiling modules", ()=>{
     assertAst(ast, [
       'window.isClient=true;',
       'define("data/dep2",["require","exports","module"],(require,exports,module)=>true);',
-      'define("data/compile-es6",["require","data/dep2"],require=>{return require("data/dep2")});',
+      'define("data/compile-es6",["require","data/dep2"],require=>require("data/dep2"));',
     ]);
   });
 
