@@ -5,7 +5,6 @@ const Path = require('path');
 const fs = require('fs');
 
 const compiler = require('../lib/compiler');
-const {terser} = compiler;
 
 // Converts more types than JSON.stringify including functions
 const stringify = value =>{
@@ -59,9 +58,9 @@ const astConfig = {
 
 const yaajsCode = fs.readFileSync(require.resolve('yaajs/yaa.js')).toString();
 const opts = {filename: 'index.js'};
-opts.toplevel = terser.parse(yaajsCode, opts);
+opts.toplevel = compiler.parse(yaajsCode, opts);
 opts.filename = '__config__.js';
-const toplevel = terser.parse(configCode, opts);
+const toplevel = compiler.parse(configCode, opts);
 
 const out = Path.join(buildDir, "index.js");
 try {

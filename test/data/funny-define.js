@@ -6,7 +6,7 @@ typeof define === 'function' && define.amd ? define(['exports'], factory) :
   exports.foo = 123;
 
   function define() {}
-  const define = ()=>{};
+  var define = ()=>{};
 
   let a, b, c;
 

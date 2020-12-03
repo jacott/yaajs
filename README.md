@@ -11,7 +11,7 @@ a module and all modules dependant on it. It also tries to help find
 where loading failed due to syntax/loading errors and dependency
 cycles.
 
-Only modern browsers and NodeJS >= version 10 are supported.
+Only modern browsers and NodeJS >= version 12 are supported.
 
 
 ## Install
