@@ -84,6 +84,20 @@ describe("Compiling modules", ()=>{
     ]);
   });
 
+  it("calls onBuildRead for plugin builder", () => {
+    let ast;
+    compiler.compile({
+      contextConfig,
+      name: "data/complex-plugin!data/simple",
+      onBuildRead(mod, contents) {
+        return `{onBuildRead: "${mod.id}"}`;
+      },
+      callback(r) {ast = r.ast}
+    });
+    assert.equal(ast.type, "Program");
+    assertAst(ast, ['{onBuildRead:"data/complex-plugin"}{onBuildRead:"data/complex-plugin!data/simple"}']);
+  });
+
   it("can compile es6", () => {
     let ast;
     compiler.compile({
