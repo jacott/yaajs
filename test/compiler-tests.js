@@ -98,6 +98,20 @@ describe("Compiling modules", ()=>{
     assertAst(ast, ['{onBuildRead:"data/complex-plugin"}{onBuildRead:"data/complex-plugin!data/simple"}']);
   });
 
+  it("can compile empty define", () => {
+     let ast;
+    compiler.compile({
+      name: "data/compile-empty",
+      contextConfig,
+      toplevel: compiler.parse("window.isClient = true;"),
+      callback(r) {ast = r.ast}
+    });
+    assertAst(ast, [
+      'window.isClient=true;',
+      'define("data/compile-empty",);',
+    ]);
+  });
+
   it("can compile es6", () => {
     let ast;
     compiler.compile({
